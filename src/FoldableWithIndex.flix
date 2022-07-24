@@ -63,7 +63,7 @@ class FoldableWithIndex[t : Type -> Type] with Foldable[t] {
     /// Apply `f` to every value in `t`. `f` is applied for its monadic effect,
     /// the answer it produces is discarded.
     ///
-    pub def foreachM(f: (Int32, a) -> m[b] & ef, t: t[a]): m[Unit] & ef with Monad[m] =
+    pub def foreachMWithIndex(f: (Int32, a) -> m[b] & ef, t: t[a]): m[Unit] & ef with Monad[m] =
         use Applicative.{point, *>};
         FoldableWithIndex.foldLeftMWithIndex((ix, acc, a) -> f(ix, a) *> point(acc), (), t)
 
@@ -85,7 +85,7 @@ instance FoldableWithIndex[List] {
         loop(0, l, upcast(identity)) // NB: Cast required because the identity continuation is pure,
                                   // but the intermediate continuations are effect polymorphic
 
-    pub override def foreachM(f: (Int32, a) -> m[b] & ef, l: List[a]): m[Unit] & ef with Monad[m] =
+    pub override def foreachMWithIndex(f: (Int32, a) -> m[b] & ef, l: List[a]): m[Unit] & ef with Monad[m] =
         use Applicative.{point};
         def loop(_, ix, ll) = match ll {
             case Nil     => point()
