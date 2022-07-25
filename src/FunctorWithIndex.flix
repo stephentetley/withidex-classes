@@ -19,23 +19,18 @@ pub class FunctorWithIndex[m : Type -> Type] with Functor[m] {
     ///
     /// Applies the function `f` to `x` preserving its structure.
     ///
-    pub def mapWithIndex(f: (a, Int32) -> b & ef, x: m[a]): m[b] & ef
+    pub def mapWithIndex(f: (Int32, a) -> b & ef, x: m[a]): m[b] & ef
 
 }
 
 instance FunctorWithIndex[List] {
-    pub def mapWithIndex(f: (a, Int32) -> b & ef, l: List[a]): List[b] & ef = 
-        def loop(ix, ll, k) = match ll {
-            case Nil     => k(Nil)
-            case x :: rs => {
-                let a = f(x, ix);
-                loop(ix+1, rs, ks -> k(a :: ks))
-            }
-        };
-        loop(0, l, identity)
-
+    pub def mapWithIndex(f: (Int32, a) -> b & ef, l: List[a]): List[b] & ef = 
+        List.mapWithIndex(flip(f), l)
 }
 
-
+instance FunctorWithIndex[Chain] {
+    pub def mapWithIndex(f: (Int32, a) -> b & ef, l: Chain[a]): Chain[b] & ef = 
+        Chain.mapWithIndex(flip(f), l)
+}
 
 
