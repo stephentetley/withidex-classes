@@ -25,12 +25,12 @@ pub class FunctorWithIndex[m : Type -> Type] with Functor[m] {
 
 instance FunctorWithIndex[List] {
     pub def mapWithIndex(f: (Int32, a) -> b & ef, l: List[a]): List[b] & ef = 
-        List.mapWithIndex(flip(f), l)
+        List.mapWithIndex(f, l)
 }
 
 instance FunctorWithIndex[Chain] {
     pub def mapWithIndex(f: (Int32, a) -> b & ef, l: Chain[a]): Chain[b] & ef = 
-        Chain.mapWithIndex(flip(f), l)
+        Chain.mapWithIndex(f, l)
 }
 
 
