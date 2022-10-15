@@ -72,7 +72,7 @@ class FoldableWithIndex[t : Type -> Type] with Foldable[t] {
 instance FoldableWithIndex[List] {
     pub override def foldLeftWithIndex(f: (Int32, b, a) -> b & ef, s: b, l: List[a]): b & ef = 
         def loop(acc, ix, ll) = match ll {
-            case Nil     => s
+            case Nil     => acc
             case x :: xs => loop(f(ix, acc, x), ix+1, xs)
         };
         loop(s, 0, l)
@@ -95,6 +95,92 @@ instance FoldableWithIndex[List] {
 
 }
 
+
+instance FoldableWithIndex[Nel] {
+    pub override def foldLeftWithIndex(f: (Int32, b, a) -> b & ef, s: b, l: Nel[a]): b & ef = 
+        let Nel(x, ll) = l;
+        FoldableWithIndex.foldLeftWithIndex(f, s, x :: ll)
+
+    pub override def foldRightWithIndex(f: (Int32, a, b) -> b & ef, s: b, l: Nel[a]): b & ef =
+        let Nel(x, ll) = l;
+        FoldableWithIndex.foldRightWithIndex(f, s, x :: ll) 
+
+    pub override def foreachMWithIndex(f: (Int32, a) -> m[b] & ef, l: Nel[a]): m[Unit] & ef with Monad[m] =
+        let Nel(x, ll) = l;
+        FoldableWithIndex.foreachMWithIndex(f, x :: ll)
+
+}
+
+instance FoldableWithIndex[Chain] {
+    pub override def foldLeftWithIndex(f: (Int32, b, a) -> b & ef, s: b, c: Chain[a]): b & ef = 
+        use Chain.ViewLeft.{SomeLeft, NoneLeft};
+        use Chain.{viewLeft};
+        def loop(acc, ix, vw) = match vw {
+            case NoneLeft          => acc
+            case SomeLeft(x, rest) => loop(f(ix, acc, x), ix+1, viewLeft(rest))
+        };
+        loop(s, 0, viewLeft(c))
+
+    // Don't use viewRight because we don't immediately know the length of the chain (finding 
+    // it would need an extra traversal)
+    pub override def foldRightWithIndex(f: (Int32, a, b) -> b & ef, s: b, c: Chain[a]): b & ef =
+        use Chain.ViewLeft.{SomeLeft, NoneLeft};
+        use Chain.{viewLeft};
+        def loop(ix, vw, k) = match vw {
+            case NoneLeft        => k(s)
+            case SomeLeft(x, xs) => loop(ix+1, viewLeft(xs), ks -> k(f(ix, x, ks)))
+        };
+        loop(0, viewLeft(c), upcast(identity)) // NB: Cast required because the identity continuation is pure,
+                                            // but the intermediate continuations are effect polymorphic
+
+
+    pub override def foreachMWithIndex(f: (Int32, a) -> m[b] & ef, c: Chain[a]): m[Unit] & ef with Monad[m] =
+        use Applicative.{point};
+        use Chain.ViewLeft.{SomeLeft, NoneLeft};
+        use Chain.{viewLeft};
+        def loop(_, ix, vw) = match vw {
+            case NoneLeft          => point()
+            case SomeLeft(x, rest) => loop(Functor.ignore(f(ix, x)), ix+1, viewLeft(rest))
+        };
+        loop(point(), 0, viewLeft(c))
+
+}
+
+
+instance FoldableWithIndex[Nec] {
+    pub override def foldLeftWithIndex(f: (Int32, b, a) -> b & ef, s: b, l: Nec[a]): b & ef = 
+        use Nec.ViewLeft.{SomeLeft, OneLeft};
+        use Nec.{viewLeft};
+        def loop(acc, ix, vw) = match vw {
+            case OneLeft(x)        => f(ix, acc, x)
+            case SomeLeft(x, rest) => loop(f(ix, acc, x), ix+1, viewLeft(rest))
+        };
+        loop(s, 0, viewLeft(l))
+
+    // Don't use viewRigt because we don't immediately know the length of the chain (finding 
+    // it would need an extra traversal)
+    pub override def foldRightWithIndex(f: (Int32, a, b) -> b & ef, s: b, l: Nec[a]): b & ef =
+        use Nec.ViewLeft.{SomeLeft, OneLeft};
+        use Nec.{viewLeft};
+        def loop(ix, vw, k) = match vw {
+            case OneLeft(x)      => f(ix, x, s)
+            case SomeLeft(x, xs) => loop(ix+1, viewLeft(xs), ks -> k(f(ix, x, ks)))
+        };
+        loop(0, viewLeft(l), upcast(identity)) // NB: Cast required because the identity continuation is pure,
+                                            // but the intermediate continuations are effect polymorphic
+
+
+    pub override def foreachMWithIndex(f: (Int32, a) -> m[b] & ef, l: Nec[a]): m[Unit] & ef with Monad[m] =
+        use Applicative.{point};
+        use Nec.ViewLeft.{SomeLeft, OneLeft};
+        use Nec.{viewLeft};
+        def loop(_, ix, vw) = match vw {
+            case OneLeft(x)        => Functor.ignore(f(ix, x))
+            case SomeLeft(x, rest) => loop(Functor.ignore(f(ix, x)), ix+1, viewLeft(rest))
+        };
+        loop(point(), 0, viewLeft(l))
+
+}
 
 
 

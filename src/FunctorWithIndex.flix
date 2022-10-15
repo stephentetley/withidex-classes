@@ -33,4 +33,13 @@ instance FunctorWithIndex[Chain] {
         Chain.mapWithIndex(f, l)
 }
 
+instance FunctorWithIndex[Nel] {
+    pub def mapWithIndex(f: (Int32, a) -> b & ef, l: Nel[a]): Nel[b] & ef = 
+        Nel.mapWithIndex(f, l)
+}
+
+instance FunctorWithIndex[Nec] {
+    pub def mapWithIndex(f: (Int32, a) -> b & ef, l: Nec[a]): Nec[b] & ef = 
+        Nec.mapWithIndex(f, l)
+}
 
