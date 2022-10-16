@@ -19,27 +19,27 @@ pub class FunctorWithIndex[m : Type -> Type] with Functor[m] {
     ///
     /// Applies the function `f` to `x` preserving its structure.
     ///
-    pub def mapWithIndex(f: (Int32, a) -> b & ef, x: m[a]): m[b] & ef
+    pub def mapWithIndex(f: (Int32, a) -> b \ ef, x: m[a]): m[b] \ ef
 
 }
 
 instance FunctorWithIndex[List] {
-    pub def mapWithIndex(f: (Int32, a) -> b & ef, l: List[a]): List[b] & ef = 
+    pub def mapWithIndex(f: (Int32, a) -> b \ ef, l: List[a]): List[b] \ ef = 
         List.mapWithIndex(f, l)
 }
 
 instance FunctorWithIndex[Chain] {
-    pub def mapWithIndex(f: (Int32, a) -> b & ef, l: Chain[a]): Chain[b] & ef = 
+    pub def mapWithIndex(f: (Int32, a) -> b \ ef, l: Chain[a]): Chain[b] \ ef = 
         Chain.mapWithIndex(f, l)
 }
 
 instance FunctorWithIndex[Nel] {
-    pub def mapWithIndex(f: (Int32, a) -> b & ef, l: Nel[a]): Nel[b] & ef = 
+    pub def mapWithIndex(f: (Int32, a) -> b \ ef, l: Nel[a]): Nel[b] \ ef = 
         Nel.mapWithIndex(f, l)
 }
 
 instance FunctorWithIndex[Nec] {
-    pub def mapWithIndex(f: (Int32, a) -> b & ef, l: Nec[a]): Nec[b] & ef = 
+    pub def mapWithIndex(f: (Int32, a) -> b \ ef, l: Nec[a]): Nec[b] \ ef = 
         Nec.mapWithIndex(f, l)
 }
 

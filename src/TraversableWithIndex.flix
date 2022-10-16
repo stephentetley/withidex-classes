@@ -20,18 +20,18 @@ pub class TraversableWithIndex[t : Type -> Type] with Traversable[t] {
     /// Returns the result of applying the applicative mapping function `f` to all the elements of the
     /// data structure `t`.
     ///
-    pub def traverseWithIndex(f: (Int32, a) -> m[b] & ef, t: t[a]): m[t[b]] & ef with Applicative[m]
+    pub def traverseWithIndex(f: (Int32, a) -> m[b] \ ef, t: t[a]): m[t[b]] \ ef with Applicative[m]
 
 }
 
 instance TraversableWithIndex[List] {
-    pub def traverseWithIndex(f: (Int32, a) -> m[b] & ef, l: List[a]): m[List[b]] & ef with Applicative[m] =
+    pub def traverseWithIndex(f: (Int32, a) -> m[b] \ ef, l: List[a]): m[List[b]] \ ef with Applicative[m] =
         TraversableWithIndexHelper.traverseWithIndexList(f, l)
 
 }
 
 instance TraversableWithIndex[Chain] {
-    pub def traverseWithIndex(f: (Int32, a) -> m[b] & ef, l: Chain[a]): m[Chain[b]] & ef with Applicative[m] =
+    pub def traverseWithIndex(f: (Int32, a) -> m[b] \ ef, l: Chain[a]): m[Chain[b]] \ ef with Applicative[m] =
         TraversableWithIndexHelper.traverseWithIndexChain(f, l)
 
 }
@@ -39,12 +39,12 @@ instance TraversableWithIndex[Chain] {
 
 namespace TraversableWithIndex {
 
-    pub def forWithIndex(t: t[a], f: (Int32, a) -> m[b] & ef): m[t[b]] & ef with Applicative[m], TraversableWithIndex[t] = 
+    pub def forWithIndex(t: t[a], f: (Int32, a) -> m[b] \ ef): m[t[b]] \ ef with Applicative[m], TraversableWithIndex[t] = 
         TraversableWithIndex.traverseWithIndex(f, t)
 
     /// mapAccumLeftWithIndex
 
-    pub def mapAccumLeftWithIndex(f: (Int32, acc, a) -> (acc, b) & ef, start: acc, t: t[a]): (acc, t[b]) & ef with TraversableWithIndex[t] =
+    pub def mapAccumLeftWithIndex(f: (Int32, acc, a) -> (acc, b) \ ef, start: acc, t: t[a]): (acc, t[b]) \ ef with TraversableWithIndex[t] =
         region r {
             let acc = ref start @ r;
             let Identity(tb) = t |> TraversableWithIndex.traverseWithIndex((ix, x) -> {
@@ -64,14 +64,14 @@ namespace TraversableWithIndexHelper {
     use Applicative.{<*>};
 
 
-    pub def traverseWithIndexList(f: (Int32, a) -> m[b] & ef, l: List[a]): m[List[b]] & ef with Applicative[m] =
+    pub def traverseWithIndexList(f: (Int32, a) -> m[b] \ ef, l: List[a]): m[List[b]] \ ef with Applicative[m] =
         def loop(ix, ll, k) = match ll {
             case Nil     => k(Applicative.point(Nil))
             case x :: xs => loop(ix+1, xs, ks -> k(((z, zs) -> z :: zs) <$> f(ix, x) <*> ks))
         };
         loop(0, l, upcast(ks -> ks))
 
-    pub def traverseWithIndexChain(f: (Int32, a) -> m[b] & ef, c: Chain[a]): m[Chain[b]] & ef with Applicative[m] =
+    pub def traverseWithIndexChain(f: (Int32, a) -> m[b] \ ef, c: Chain[a]): m[Chain[b]] \ ef with Applicative[m] =
         use Chain.ViewLeft.{NoneLeft, SomeLeft};
         def loop(ix, cc, k) = match cc {
             case NoneLeft        => k(Applicative.point(Chain.empty()))
